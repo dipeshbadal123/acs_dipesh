@@ -1,7 +1,13 @@
+import 'dart:developer';
+
+import 'package:advance_cyber_security/controller/auth_controller.dart';
 import 'package:advance_cyber_security/view/auth/login_view.dart';
 import 'package:advance_cyber_security/view/home/home_page.dart';
+import 'package:advance_cyber_security/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:lottie/lottie.dart';
 
 class ChangePassword extends StatefulWidget {
@@ -22,61 +28,6 @@ class _ChangePasswordState extends State<ChangePassword>
   bool showPassword = true;
   @override
   Widget build(BuildContext context) {
-    Future<User> changePassword() async {
-      try {
-        final user = FirebaseAuth.instance.currentUser;
-        final cred = EmailAuthProvider.credential(
-            email: 'a@gmail.com',
-            password: _currentPasswordController.text.trim());
-        user.reauthenticateWithCredential(cred).then((value) {
-          user.updatePassword(_newPasswordController.text).then((_) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.all(80.0),
-                padding: EdgeInsets.all(25),
-                duration: Duration(seconds: 3),
-                shape: RoundedRectangleBorder(),
-                backgroundColor: Colors.red,
-                content: Text('Password changed successfully')));
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return LoginPage();
-            }));
-            return user;
-          }).catchError((error) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.all(80.0),
-                padding: EdgeInsets.all(25),
-                duration: Duration(seconds: 3),
-                shape: RoundedRectangleBorder(),
-                backgroundColor: Colors.red,
-                content: Text(error.message)));
-          });
-        }).catchError((err) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.all(80.0),
-              padding: EdgeInsets.all(25),
-              duration: Duration(seconds: 3),
-              shape: RoundedRectangleBorder(),
-              backgroundColor: Colors.red,
-              content: Text(err.message)));
-        });
-      } on FirebaseAuthException catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.all(80.0),
-            padding: EdgeInsets.all(25),
-            duration: Duration(seconds: 3),
-            shape: RoundedRectangleBorder(),
-            backgroundColor: Colors.red,
-            content: Text(e.message)));
-
-// show the snackbar here
-      }
-      return null;
-    }
-
     return SafeArea(
         child: Scaffold(
       backgroundColor: Colors.white,
@@ -284,7 +235,9 @@ class _ChangePasswordState extends State<ChangePassword>
                           child: MaterialButton(
                             onPressed: () async {
                               if (_formKey.currentState.validate()) {
-                                changePassword();
+                                AuthController().changePassword(
+                                    _newPasswordController.text.trim(),
+                                    _currentPasswordController.text.trim());
                               }
                             },
                             child: const Text(

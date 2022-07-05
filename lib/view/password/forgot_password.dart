@@ -1,4 +1,6 @@
+import 'package:advance_cyber_security/controller/auth_controller.dart';
 import 'package:advance_cyber_security/view/auth/login_view.dart';
+import 'package:advance_cyber_security/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -14,54 +16,6 @@ class _ForgotPasswordState extends State<ForgotPassword>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
-  Future resetPassword() async {
-    try {
-      await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: _emailController.text.trim());
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.35,
-              left: MediaQuery.of(context).size.width * 0.35),
-          padding: EdgeInsets.all(15),
-          action: SnackBarAction(
-            textColor: Colors.red,
-            label: 'CLOSE',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 5),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Colors.white,
-          content: Text(
-            'Passwod reset link has been successfully forwared to the given email address...',
-            style: TextStyle(color: Colors.cyan, fontWeight: FontWeight.bold),
-          )));
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.35,
-              left: MediaQuery.of(context).size.width * 0.35),
-          padding: EdgeInsets.all(15),
-          action: SnackBarAction(
-            textColor: Colors.red,
-            label: 'CLOSE',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 5),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Colors.white,
-          content: Text(
-            e.message,
-            style: TextStyle(color: Colors.cyan, fontWeight: FontWeight.bold),
-          )));
-// show the snackbar here
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +99,8 @@ class _ForgotPasswordState extends State<ForgotPassword>
                           child: MaterialButton(
                             onPressed: () async {
                               if (_formKey.currentState.validate()) {
-                                await resetPassword();
+                                AuthController()
+                                    .resetPassword(_emailController.text);
                               }
                             },
                             child: const Text(

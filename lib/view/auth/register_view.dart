@@ -1,8 +1,12 @@
+import 'package:advance_cyber_security/controller/auth_controller.dart';
+import 'package:advance_cyber_security/services/recaptcha_services.dart';
 import 'package:advance_cyber_security/view/auth/login_view.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:advance_cyber_security/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_password_strength/flutter_password_strength.dart';
 import 'package:g_recaptcha_v3/g_recaptcha_v3.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:lottie/lottie.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -20,49 +24,6 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController _name = TextEditingController();
   bool showPassword = true;
   bool isAgree = false;
-  Future<User> createAccount(String name, String email, String password) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-
-    try {
-      User user = (await auth.createUserWithEmailAndPassword(
-              email: email, password: password))
-          .user;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.3,
-              left: MediaQuery.of(context).size.width * 0.3),
-          padding: EdgeInsets.all(10),
-          action: SnackBarAction(
-            label: 'Close',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 3),
-          shape: RoundedRectangleBorder(),
-          backgroundColor: Colors.red,
-          content: Text('User Login successfull')));
-      return user;
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.3,
-              left: MediaQuery.of(context).size.width * 0.3),
-          padding: EdgeInsets.all(10),
-          action: SnackBarAction(
-            label: 'Close',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 3),
-          shape: RoundedRectangleBorder(),
-          backgroundColor: Colors.red,
-          content: Text(e.message)));
-// show the snackbar here
-    }
-    return null;
-  }
 
   void initState() {
     super.initState();
@@ -135,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               labelStyle: TextStyle(color: Colors.white),
                               hintStyle: TextStyle(color: Colors.white),
-                              hintText: 'joe',
+                              hintText: 'username',
                               labelText: 'User name',
                               border: OutlineInputBorder(
                                 borderSide:
@@ -197,6 +158,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                       .hasMatch(value)) {
                                 return 'Your Password needs to:\ninclude both lower and upper case character (A-Z or a-z)\ninclude at least one number(0-9) and symbol(@,£%^&*)\nbe at least 8 character long';
                               }
+                              if (value == 'P@ssw0rd') {
+                                return "This is a commonly used password and can't b used";
+                              }
                               return null;
                             },
                             onChanged: (value) {
@@ -256,8 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (value.isEmpty) {
                                 return "Confirm Password can't be empty";
                               }
-                              if (value.isEmpty &&
-                                  _password != _confirmPassword) {
+                              if (_password.text != _confirmPassword.text) {
                                 return "Your Password didn't match";
                               }
                               return null;
@@ -324,16 +287,28 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: MaterialButton(
                                   onPressed: () async {
                                     if (_formKey.currentState.validate()) {
-                                      createAccount(
-                                          _name.text.trim(),
-                                          _email.text.trim(),
-                                          _password.text.trim());
+                                      bool _isNotABot =
+                                          await RecaptchaService.isNotABot();
+                                      if (_isNotABot) {
+                                        _formKey.currentState.save();
+                                        AuthController()
+                                            .createAccount(
+                                                _name.text.trim(),
+                                                _email.text.trim(),
+                                                _password.text.trim())
+                                            .then((value) => {
+                                                  if (value != null)
+                                                    {
+                                                      Get.to(() => LoginPage()),
+                                                      openDialog(
+                                                          "User account registered Successfully")
+                                                    }
+                                                });
+                                      } else {
+                                        openDialog(
+                                            "It seems that You are not human.");
+                                      }
                                     }
-                                    setState(() {
-                                      GRecaptchaV3.ready(
-                                          "6LeiibMgAAAAAMfUwJLHpzaQ6EPAghJ6HhMi3-tZ",
-                                          showBadge: false);
-                                    });
                                   },
                                   child: Text(
                                     'Register',

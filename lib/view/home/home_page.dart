@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:advance_cyber_security/view/password/change_password.dart';
 import 'package:advance_cyber_security/view/auth/login_view.dart';
+import 'package:advance_cyber_security/widgets/logout.dart';
+import 'package:advance_cyber_security/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g_recaptcha_v3/g_recaptcha_v3.dart';
@@ -92,27 +96,17 @@ class _HomePageState extends State<HomePage> {
                                 color: Colors.cyan,
                                 child: MaterialButton(
                                     onPressed: () async {
-                                      FirebaseAuth auth = FirebaseAuth.instance;
                                       try {
-                                        await auth.signOut().then((value) {
+                                        await FirebaseAuth.instance
+                                            .signOut()
+                                            .then((value) {
                                           Navigator.push(context,
                                               MaterialPageRoute(
                                                   builder: (context) {
                                             return LoginPage();
                                           }));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                  margin: EdgeInsets.all(80.0),
-                                                  padding: EdgeInsets.all(25),
-                                                  duration:
-                                                      Duration(seconds: 3),
-                                                  shape:
-                                                      RoundedRectangleBorder(),
-                                                  backgroundColor: Colors.red,
-                                                  content: Text(
-                                                      'User account logged out successfully...')));
+                                          openDialog(
+                                              "User account logged out successfully");
                                         });
                                       } catch (e) {
                                         print(e.toString());

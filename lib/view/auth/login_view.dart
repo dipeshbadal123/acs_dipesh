@@ -1,10 +1,11 @@
 // ignore_for_file: unused_field
-
-import 'package:advance_cyber_security/view/auth/authuntication.dart';
+import 'package:advance_cyber_security/controller/auth_controller.dart';
+import 'package:advance_cyber_security/view/home/home_page.dart';
 import 'package:advance_cyber_security/view/password/forgot_password.dart';
 import 'package:advance_cyber_security/view/auth/register_view.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:advance_cyber_security/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,57 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _password = TextEditingController();
   bool showPassword = true;
   bool isAgree = false;
-
-  Future<User> logIn(String email, String password) async {
-    try {
-      User user = (await FirebaseAuth.instance
-              .signInWithEmailAndPassword(email: email, password: password))
-          .user;
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return Authunticate();
-      }));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.3,
-              left: MediaQuery.of(context).size.width * 0.3),
-          padding: EdgeInsets.all(10),
-          action: SnackBarAction(
-            label: 'Close',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 3),
-          shape: RoundedRectangleBorder(),
-          backgroundColor: Colors.red,
-          content: Text('User Login successfull')));
-      return user;
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height / 2,
-              right: MediaQuery.of(context).size.width * 0.35,
-              left: MediaQuery.of(context).size.width * 0.35),
-          padding: EdgeInsets.all(15),
-          action: SnackBarAction(
-            textColor: Colors.red,
-            label: 'CLOSE',
-            onPressed: () {},
-          ),
-          duration: Duration(seconds: 5),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Colors.white,
-          content: Text(
-            e.message,
-            textAlign: TextAlign.justify,
-            style: TextStyle(color: Colors.cyan, fontWeight: FontWeight.bold),
-          )));
-// show the snackbar here
-    }
-    return null;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,8 +109,9 @@ class _LoginPageState extends State<LoginPage> {
                                 if (value.isEmpty ||
                                     !RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$')
                                         .hasMatch(value)) {
-                                  return 'Your Password needs to:\ninclude both lower and upper case character (A-Z or a-z)\ninclude at least one number(0-9) and symbol(@,£%^&*)\nbe at least 8 character long';
+                                  return "Requirements:  Uppercase letter,Lowercase letter,Number and \nSpecial character (such as ?!,@)";
                                 }
+
                                 return null;
                               },
                               onChanged: (value) {
@@ -172,7 +123,9 @@ class _LoginPageState extends State<LoginPage> {
                                   errorBorder: OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white)),
-                                  errorStyle: TextStyle(color: Colors.white),
+                                  errorStyle: TextStyle(
+                                    color: Colors.white,
+                                  ),
                                   helperStyle: TextStyle(color: Colors.white),
                                   focusedBorder: const OutlineInputBorder(
                                     borderSide: const BorderSide(
@@ -234,8 +187,16 @@ class _LoginPageState extends State<LoginPage> {
                                 child: MaterialButton(
                                     onPressed: () async {
                                       if (_formKey.currentState.validate()) {
-                                        logIn(_email.text.trim(),
-                                            _password.text.trim());
+                                        AuthController()
+                                            .logIn(_email.text.trim(),
+                                                _password.text.trim())
+                                            .then((value) {
+                                          if (value != null) {
+                                            Get.to(() => HomePage());
+                                            openDialog(
+                                                'Welcome to the secure web application');
+                                          } else {}
+                                        });
                                       }
                                     },
                                     child: Text(
@@ -244,34 +205,6 @@ class _LoginPageState extends State<LoginPage> {
                                           color: Colors.white, fontSize: 20),
                                     )),
                               )),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Checkbox(
-                                  value: isAgree,
-                                  onChanged: (e) {
-                                    setState(() {
-                                      isAgree = !isAgree;
-                                    });
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(2.0),
-                                  ),
-                                  side: MaterialStateBorderSide.resolveWith(
-                                    (states) => BorderSide(
-                                        width: 1.0, color: Colors.white),
-                                  ),
-                                ),
-                                Text(
-                                  'I agree to the Terms and Conditions.   ',
-                                  style: TextStyle(color: Colors.blueAccent),
-                                ),
-                              ],
-                            ),
-                          ),
                           SizedBox(
                             height: 10,
                           ),
